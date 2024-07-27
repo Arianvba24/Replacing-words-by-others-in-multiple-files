@@ -1,0 +1,52 @@
+   
+Application.ScreenUpdating = False
+Dim strInFolder As String, strOutFold As String, strFile As String, wdDoc As Document
+strInFolder = GetFolder
+If strInFolder = "" Then Exit Sub
+strFile = Dir(strInFolder & "\*.docx", vbNormal)
+'Check for documents in the folder - exit if none found
+If strFile <> "" Then strOutFold = strInFolder & "\Output\"
+'Test for an existing outpfolder & create one if it doesn't already exist
+If Dir(strOutFold, vbDirectory) = "" Then MkDir strOutFold
+strFile = Dir(strInFolder & "\*.doc", vbNormal)
+While strFile <> ""
+  Set wdDoc = Documents.Open(FileName:=strInFolder & "\" & strFile, AddToRecentFiles:=False, ReadOnly:=True, Visible:=False)
+  With wdDoc
+ Dim rngStory As Range
+      .ClearFormatting
+      .Replacement.ClearFormatting
+      .Forward = True
+      .Wrap = wdFindContinue
+      .Format = False
+      .MatchCase = False
+      .MatchWholeWord = False
+      .MatchWildcards = False
+      .MatchSoundsLike = False
+      .MatchAllWordForms = False
+      .Text = "ICU Pavilion"
+      .Replacement.Text = "ICU Pavilion Increment 5"
+      .Execute Replace:=wdReplaceAll
+      .Text = "DR 26"
+      .Replacement.Text = "DR 44"
+      .Execute Replace:=wdReplaceAll
+      .Text = "10/03/2022"
+      .Replacement.Text = "01/10/2023"
+      .Execute Replace:=wdReplaceAll
+ End With
+    'Save and close the document
+    .SaveAs FileName:=strOutFold & .Name, AddToRecentFiles:=False
+    .Close
+  End With
+  strFile = Dir()
+Wend
+Set wdDoc = Nothing
+Application.ScreenUpdating = True
+End Sub 
+ 
+Function GetFolder() As String
+Dim oFolder As Object
+GetFolder = ""
+Set oFolder = CreateObject("Shell.Application").BrowseForFolder(0, "Choose a folder", 0)
+If (Not oFolder Is Nothing) Then GetFolder = oFolder.Items.Item.Path
+Set oFolder = Nothing
+End Function
